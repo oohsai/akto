@@ -6,35 +6,52 @@ import InputBase from "@mui/material/TextField"
 import IconButton from "@mui/material/IconButton"
 import TextFieldCloseable from './TextFieldCloseable.jsx'
 
+const TemplateStringEditor = ({ defaultText, onChange, usePureJs = false, storageKey }) => {
+  const [toggle, setToggle] = useState(true);
+  const [text, setText] = useState(defaultText);
 
-import './start-node.css';
-
-const TemplateStringEditor = ({defaultText, onChange, usePureJs=false}) => {
-
-    const [toggle, setToggle] = useState(true);
-    const toggleChecked = () => { 
-      if (!toggle) {
-        onChange(text)
-      }
-      setToggle(toggle => !toggle);
+  // Load auto-saved data when the component mounts
+  useEffect(() => {
+    const savedData = localStorage.getItem(storageKey);
+    if (savedData) {
+      setText(savedData);
     }
-    let [text, setText] = React.useState(defaultText);
+  }, [storageKey]);
 
-    const onChangeInputBase = (a, b) => {
-        setText(a.target.value)
+  const toggleChecked = () => {
+    if (!toggle) {
+      // Save the data to localStorage when switching back to read mode
+      localStorage.setItem(storageKey, text);
+      onChange(text);
     }
+    setToggle((toggle) => !toggle);
+  };
 
-    return (
-       <div style={{position: "relative"}}>
-          {toggle && <TextFieldCloseable text={text} usePureJs={usePureJs}/> }
-          {!toggle && <InputBase value={text} onChange={onChangeInputBase} fullWidth multiline inputProps={{className: 'request-editor'}} variant="standard"/>}
-          <div style={{position: "absolute", top: "4px", right: "10px"}}>
-            <IconButton onClick={toggleChecked}>
-                <FontAwesomeIcon icon={toggle ? faEdit : faCheckSquare} className="primary-btn" />
-            </IconButton>
-          </div>
-       </div>
-    );
-  }
+  const onChangeInputBase = (e) => {
+    const newText = e.target.value;
+    setText(newText);
+  };
 
-export default TemplateStringEditor
+  return (
+    <div style={{ position: "relative" }}>
+      {toggle && <TextFieldCloseable text={text} usePureJs={usePureJs} />}
+      {!toggle && (
+        <InputBase
+          value={text}
+          onChange={onChangeInputBase}
+          fullWidth
+          multiline
+          inputProps={{ className: 'request-editor' }}
+          variant="standard"
+        />
+      )}
+      <div style={{ position: "absolute", top: "4px", right: "10px" }}>
+        <IconButton onClick={toggleChecked}>
+          <FontAwesomeIcon icon={toggle ? faEdit : faCheckSquare} className="primary-btn" />
+        </IconButton>
+      </div>
+    </div>
+  );
+};
+
+export default TemplateStringEditor;
